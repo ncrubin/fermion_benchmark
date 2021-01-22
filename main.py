@@ -144,17 +144,21 @@ def time_evolve(qubits: List[cirq.Qid], sampler: cirq.Sampler,
     ax[0].set_title('Theory')
     ax[1].imshow(onsite_charge_mat_syc, aspect='auto')
     ax[1].set_title('Rainbow')
-    plt.savefig("12_qubit_run_poor_compilation.png", format="PNG", dpi=300)
+    plt.savefig("{}_qubit_rainbow.png".format(dim), format="PNG", dpi=300)
     plt.show()
 
 
 def get_rainbow_sampler(project_id='q-engine-v1'):
+    """The project id should be changed if people other than Nick Rubin 
+    use this code"""
     engine = cirq.google.Engine(project_id=project_id)
     sampler = cirq.google.QuantumEngineSampler(engine=engine, processor_id='rainbow',
                                                gate_set=cirq.google.SQRT_ISWAP_GATESET)
     return sampler
 
 def get_rainbow(project_id='q-engine-v1'):
+    """The project id should be changed if people other than Nick Rubin 
+    use this code"""
     engine = cirq.google.Engine(project_id=project_id,
                                 proto_version=cirq.google.ProtoVersion.V2)
 
@@ -165,8 +169,8 @@ def get_rainbow(project_id='q-engine-v1'):
 
 
 if __name__ == "__main__":
-    num_qubits = 4
-    qubits = [cirq.GridQubit(n, 5) for n in range(1, num_qubits + 1)]
+    num_qubits = 2
+    qubits = [cirq.GridQubit(n, 5) for n in range(0, num_qubits)]
     # sampler = cirq.Simulator(dtype=np.complex128)
     sampler = get_rainbow_sampler()
     rainbow = get_rainbow()
