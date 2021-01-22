@@ -225,15 +225,26 @@ def optimal_givens_decomposition(qubits: Sequence[cirq.Qid],
         if not numpy.isclose(phi, 0.0):
             yield cirq.Z(qubits[j])**(phi / numpy.pi)
 
-        yield Ryxxy(-theta).on(qubits[i], qubits[j])
+        # yield Ryxxy(-theta).on(qubits[i], qubits[j])
+        yield Ryxxy(qubits[i], qubits[j], -theta)
 
     for idx, phase in enumerate(phases):
-        yield cirq.Z(qubits[idx])**(numpy.angle(phase) / numpy.pi)
+        if not numpy.isclose(numpy.angle(phase), 0):
+            yield cirq.Z(qubits[idx])**(numpy.angle(phase) / numpy.pi)
 
 
-def Ryxxy(rads: float) -> cirq.PhasedISwapPowGate:
-    """Returns a gate with the matrix exp(-i rads (Y⊗X - X⊗Y) / 2)."""
-    return cirq.PhasedISwapPowGate(exponent=2 * rads / numpy.pi)
+# def Ryxxy(rads: float) -> cirq.PhasedISwapPowGate:
+#     """Returns a gate with the matrix exp(-i rads (Y⊗X - X⊗Y) / 2)."""
+#     return cirq.PhasedISwapPowGate(exponent=2 * rads / numpy.pi)
+
+def Ryxxy(a, b, theta):
+    """Implements the givens rotation with sqrt(iswap).
+    The inverse(sqrt(iswap)) is made with z before and after"""
+    yield cirq.ISWAP.on(a, b)**0.5
+    yield cirq.rz(-theta + numpy.pi).on(a)
+    yield cirq.rz(theta).on(b)
+    yield cirq.ISWAP.on(a, b)**0.5
+    yield cirq.rz(numpy.pi).on(a)
 
 
 def build_rotation_circuit(ij_list, final_phases, qubits):
@@ -256,8 +267,9 @@ def build_rotation_circuit(ij_list, final_phases, qubits):
                        strategy=cirq.InsertStrategy.EARLIEST)
 
     for idx, phase in enumerate(final_phases):
-        circuit.append(cirq.Z(qubits[idx])**(numpy.angle(phase) / numpy.pi),
-                       strategy=cirq.InsertStrategy.EARLIEST)
+        if not numpy.isclose(numpy.angle(phase), 0):
+            circuit.append(cirq.Z(qubits[idx])**(numpy.angle(phase) / numpy.pi),
+                           strategy=cirq.InsertStrategy.EARLIEST)
     return circuit
 
 

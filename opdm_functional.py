@@ -1,4 +1,6 @@
 import numpy as np
+import cirq
+
 import util
 from circuits import (build_rotation_circuits_virtual_swaps,
                       circuits_with_measurements)
@@ -7,15 +9,16 @@ import analysis
 
 class RDMCollector:
 
-    def __init__(self, sampler, num_samples, qubits):
+    def __init__(self, sampler, num_samples, qubits, compiler):
         self.sampler = sampler
         self.num_samples = num_samples
         self.qubits = qubits
+        self.compiler = compiler
 
     def calculate_data(self, unitary, initial_circuit, num_excitations):
         bare_circuits = build_rotation_circuits_virtual_swaps(
             unitary=unitary, qubits=self.qubits,
-            initial_circuit=initial_circuit)
+            initial_circuit=cirq.Circuit())
         circuit_dict = circuits_with_measurements(self.qubits, bare_circuits)
 
         # 4. Take data
@@ -41,8 +44,18 @@ class RDMCollector:
             circuits = circuit_dict[measure_type]
             for circuit_index in circuits.keys():
                 circuit = circuits[circuit_index]
+                if measure_type == 'z' and circuit_index != 0:
+                    continue
                 # This is where we take the data
-                data = self.sampler.run(circuit, repetitions=self.num_samples)
+                compiled_circuit = circuit # self.compiler(circuit)
+                circuit_to_run = initial_circuit + compiled_circuit
+                print("circuit measure_type ", measure_type)
+                print("permutation ", circuit_index)
+                print(circuit_to_run.to_text_diagram(transpose=True, 
+                                                     qubit_order=self.qubits))
+                print()
+
+                data = self.sampler.run(circuit_to_run, repetitions=self.num_samples)
                 data_dict[measure_type][circuit_index] = data.data.copy()
 
                 # PostSelect the data

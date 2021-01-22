@@ -148,11 +148,12 @@ def resample_opdm(opdm: np.ndarray,
             new_opdm[pp1, pp0] = opdm_terms[idx]
 
         odd_means = [opdm[pp[0], pp[1]] for pp in o_real_pairs]
-        opdm_terms = np.random.multivariate_normal(
-            mean=odd_means, cov=var_dict['xy_odd'][circuit_idx])
-        for idx, (pp0, pp1) in enumerate(o_real_pairs):
-            new_opdm[pp0, pp1] = opdm_terms[idx]
-            new_opdm[pp1, pp0] = opdm_terms[idx]
+        if len(odd_means) != 0:
+            opdm_terms = np.random.multivariate_normal(
+                mean=odd_means, cov=var_dict['xy_odd'][circuit_idx])
+            for idx, (pp0, pp1) in enumerate(o_real_pairs):
+                new_opdm[pp0, pp1] = opdm_terms[idx]
+                new_opdm[pp1, pp0] = opdm_terms[idx]
 
         if circuit_idx == 0:
             # resample_diagonal_terms

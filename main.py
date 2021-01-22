@@ -28,6 +28,7 @@ def fidelity_measurement(qubits: List[cirq.Qid], sampler: cirq.Sampler,
     num_excitations = sum(filling_pattern)
     initial_circuit = cirq.Circuit(
         [cirq.X.on(qubits[ii]) for ii in np.where(filling_pattern == 1)[0]])
+    initial_opdm = np.diag(filling_pattern)
 
     # 2. generate random real unitary
     generator = random((num_qubits, num_qubits))
@@ -41,10 +42,17 @@ def fidelity_measurement(qubits: List[cirq.Qid], sampler: cirq.Sampler,
     # 3. Build circuits for opdm measurement
     # NOTE: ij_rotations = (Qubit_i, Qubit_j, theta, phi)
     # Qubit_i and Qubit_j are nearest neighbors on the chip
-    opdm_gen = RDMCollector(sampler, num_samples, qubits)
+    opdm_gen = RDMCollector(sampler, num_samples, qubits, cg.optimized_for_sycamore)
     raw_opdm, raw_var, ps_opdm, ps_var = opdm_gen.calculate_rdm(unitary,
                                                                 initial_circuit,
                                                                 num_excitations)
+    true_opdm = unitary @ initial_opdm @ unitary.conj().T
+    print(raw_opdm)
+    print()
+    print(ps_opdm)
+    print()
+    print(true_opdm)
+
     # 6. compute fidelity fidelity witness and error bars
     raw_fidelity_witnesses = []
     ps_fidelity_witnesses = []
@@ -140,12 +148,34 @@ def time_evolve(qubits: List[cirq.Qid], sampler: cirq.Sampler,
     plt.show()
 
 
-# if __name__ == "__main__":
-#     num_qubits = 5
-#     qubits = [cirq.GridQubit(4, n) for n in range(1, num_qubits + 1)]
-#     sampler = cirq.Simulator(dtype=np.complex128)
-#     num_samples = 5_000
-#     # results = fidelity_measurement(qubits, sampler, num_samples)
-#     # print(results)
-#
-#     time_evolve(qubits, sampler, num_samples)
+def get_rainbow_sampler(project_id='q-engine-v1'):
+    engine = cirq.google.Engine(project_id=project_id)
+    sampler = cirq.google.QuantumEngineSampler(engine=engine, processor_id='rainbow',
+                                               gate_set=cirq.google.SQRT_ISWAP_GATESET)
+    return sampler
+
+def get_rainbow(project_id='q-engine-v1'):
+    engine = cirq.google.Engine(project_id=project_id,
+                                proto_version=cirq.google.ProtoVersion.V2)
+
+    engine_proc_rainbow = engine.get_processor('rainbow')
+    rainbow = engine_proc_rainbow.get_device([cirq.google.SQRT_ISWAP_GATESET])
+    return rainbow
+
+
+
+if __name__ == "__main__":
+    num_qubits = 4
+    qubits = [cirq.GridQubit(n, 5) for n in range(1, num_qubits + 1)]
+    # sampler = cirq.Simulator(dtype=np.complex128)
+    sampler = get_rainbow_sampler()
+    rainbow = get_rainbow()
+    print(rainbow)
+    print("using qubits")
+    print(qubits)
+
+    num_samples = 100_000
+    results = fidelity_measurement(qubits, sampler, num_samples)
+    print(results)
+
+    # time_evolve(qubits, sampler)
