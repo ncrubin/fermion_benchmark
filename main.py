@@ -148,38 +148,41 @@ def time_evolve(qubits: List[cirq.Qid], sampler: cirq.Sampler,
     plt.show()
 
 
-def get_rainbow_sampler(project_id='q-engine-v1'):
+def get_sampler(project_id='q-engine-v1', processor='rainbow'):
     """The project id should be changed if people other than Nick Rubin 
     use this code"""
     engine = cirq.google.Engine(project_id=project_id)
-    sampler = cirq.google.QuantumEngineSampler(engine=engine, processor_id='rainbow',
+    sampler = cirq.google.QuantumEngineSampler(engine=engine, processor_id=processor,
                                                gate_set=cirq.google.SQRT_ISWAP_GATESET)
     return sampler
 
-def get_rainbow(project_id='q-engine-v1'):
+def get_device(project_id='q-engine-v1', processor='rainbow'):
     """The project id should be changed if people other than Nick Rubin 
     use this code"""
     engine = cirq.google.Engine(project_id=project_id,
                                 proto_version=cirq.google.ProtoVersion.V2)
 
-    engine_proc_rainbow = engine.get_processor('rainbow')
+    engine_proc_rainbow = engine.get_processor(processor)
     rainbow = engine_proc_rainbow.get_device([cirq.google.SQRT_ISWAP_GATESET])
     return rainbow
 
 
 
 if __name__ == "__main__":
-    num_qubits = 2
+    num_qubits = 4
     qubits = [cirq.GridQubit(n, 5) for n in range(0, num_qubits)]
     # sampler = cirq.Simulator(dtype=np.complex128)
-    sampler = get_rainbow_sampler()
-    rainbow = get_rainbow()
-    print(rainbow)
+    sampler = get_sampler(processor='weber')
+    device = get_device(processor='weber')
+    print(device)
     print("using qubits")
     print(qubits)
 
     num_samples = 100_000
-    results = fidelity_measurement(qubits, sampler, num_samples)
+    results = []
+    for _ in range(10):
+        result = fidelity_measurement(qubits, sampler, num_samples)
+        results.append(result)
     print(results)
 
     # time_evolve(qubits, sampler)
