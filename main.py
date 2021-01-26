@@ -176,9 +176,9 @@ if __name__ == "__main__":
     num_qubits = 4
     qubits = [cirq.GridQubit(n, 4) for n in range(1, num_qubits + 1)]
     sampler = cirq.Simulator(dtype=np.complex128)
-    sampler = get_sampler(processor='weber')
-    device = get_device(processor='weber')
-    print(device)
+    # sampler = get_sampler(processor='weber')
+    # device = get_device(processor='weber')
+    # print(device)
     print("using qubits")
     print(qubits)
 
