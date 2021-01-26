@@ -84,6 +84,7 @@ def fidelity_measurement(qubits: List[cirq.Qid], sampler: cirq.Sampler,
 
 def time_evolve(qubits: List[cirq.Qid], sampler: cirq.Sampler,
                 num_samples: int = 5000):
+    from circuits import align_givens_circuit
     dim = len(qubits)
     hamiltonain_matrix = np.diag([-1] * (dim - 1), k=1)
     hamiltonain_matrix = hamiltonain_matrix + hamiltonain_matrix.T
@@ -116,8 +117,11 @@ def time_evolve(qubits: List[cirq.Qid], sampler: cirq.Sampler,
         initial_moment = cirq.Moment(
             [cirq.X.on(qubits[0]), cirq.X.on(qubits[dim // 2])])
 
-        circuit = cirq.Circuit(initial_moment) + cg.optimized_for_sycamore(
+        # circuit = cirq.Circuit(initial_moment) + cg.optimized_for_sycamore(
+        #     circuit)
+        circuit = cirq.Circuit(initial_moment) + align_givens_circuit(
             circuit)
+
         circuit += measurement_moment
         circuits.append(circuit)
 
@@ -170,11 +174,11 @@ def get_device(project_id='q-engine-v1', processor='rainbow'):
 
 if __name__ == "__main__":
     num_qubits = 4
-    qubits = [cirq.GridQubit(n, 5) for n in range(0, num_qubits)]
+    qubits = [cirq.GridQubit(n, 4) for n in range(1, num_qubits + 1)]
     sampler = cirq.Simulator(dtype=np.complex128)
-    # sampler = get_sampler(processor='weber')
-    # device = get_device(processor='weber')
-    # print(device)
+    sampler = get_sampler(processor='weber')
+    device = get_device(processor='weber')
+    print(device)
     print("using qubits")
     print(qubits)
 

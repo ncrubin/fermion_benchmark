@@ -47,10 +47,9 @@ class RDMCollector:
                 if measure_type == 'z' and circuit_index != 0:
                     continue
                 # This is where we take the data
-                circuit_to_run = initial_circuit + circuit
+                circuit_to_run = initial_circuit + align_givens_circuit(circuit)
                 print("circuit measure_type ", measure_type)
                 print("permutation ", circuit_index)
-                circuit_to_run = align_givens_circuit(circuit_to_run)
                 print(circuit_to_run.to_text_diagram(transpose=True,
                                                      qubit_order=self.qubits))
                 print()
