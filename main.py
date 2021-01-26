@@ -42,7 +42,7 @@ def fidelity_measurement(qubits: List[cirq.Qid], sampler: cirq.Sampler,
     # 3. Build circuits for opdm measurement
     # NOTE: ij_rotations = (Qubit_i, Qubit_j, theta, phi)
     # Qubit_i and Qubit_j are nearest neighbors on the chip
-    opdm_gen = RDMCollector(sampler, num_samples, qubits, cg.optimized_for_sycamore)
+    opdm_gen = RDMCollector(sampler, num_samples, qubits)
     raw_opdm, raw_var, ps_opdm, ps_var = opdm_gen.calculate_rdm(unitary,
                                                                 initial_circuit,
                                                                 num_excitations)
@@ -160,6 +160,7 @@ def get_sampler(project_id='q-engine-v1', processor='rainbow'):
                                                gate_set=cirq.google.SQRT_ISWAP_GATESET)
     return sampler
 
+
 def get_device(project_id='q-engine-v1', processor='rainbow'):
     """The project id should be changed if people other than Nick Rubin 
     use this code"""
@@ -171,9 +172,8 @@ def get_device(project_id='q-engine-v1', processor='rainbow'):
     return rainbow
 
 
-
 if __name__ == "__main__":
-    num_qubits = 4
+    num_qubits = 6
     qubits = [cirq.GridQubit(n, 4) for n in range(1, num_qubits + 1)]
     sampler = cirq.Simulator(dtype=np.complex128)
     # sampler = get_sampler(processor='weber')
@@ -182,7 +182,7 @@ if __name__ == "__main__":
     print("using qubits")
     print(qubits)
 
-    num_samples = 100_000
+    num_samples = 300_000
     results = []
     for _ in range(1):
         result = fidelity_measurement(qubits, sampler, num_samples)
