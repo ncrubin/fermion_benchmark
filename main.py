@@ -171,16 +171,16 @@ def get_device(project_id='q-engine-v1', processor='rainbow'):
 if __name__ == "__main__":
     num_qubits = 4
     qubits = [cirq.GridQubit(n, 5) for n in range(0, num_qubits)]
-    # sampler = cirq.Simulator(dtype=np.complex128)
-    sampler = get_sampler(processor='weber')
-    device = get_device(processor='weber')
-    print(device)
+    sampler = cirq.Simulator(dtype=np.complex128)
+    # sampler = get_sampler(processor='weber')
+    # device = get_device(processor='weber')
+    # print(device)
     print("using qubits")
     print(qubits)
 
     num_samples = 100_000
     results = []
-    for _ in range(10):
+    for _ in range(1):
         result = fidelity_measurement(qubits, sampler, num_samples)
         results.append(result)
     print(results)

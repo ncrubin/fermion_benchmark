@@ -3,7 +3,7 @@ import cirq
 
 import util
 from circuits import (build_rotation_circuits_virtual_swaps,
-                      circuits_with_measurements)
+                      circuits_with_measurements, align_givens_circuit)
 import analysis
 
 
@@ -47,11 +47,11 @@ class RDMCollector:
                 if measure_type == 'z' and circuit_index != 0:
                     continue
                 # This is where we take the data
-                compiled_circuit = circuit # self.compiler(circuit)
-                circuit_to_run = initial_circuit + compiled_circuit
+                circuit_to_run = initial_circuit + circuit
                 print("circuit measure_type ", measure_type)
                 print("permutation ", circuit_index)
-                print(circuit_to_run.to_text_diagram(transpose=True, 
+                circuit_to_run = align_givens_circuit(circuit_to_run)
+                print(circuit_to_run.to_text_diagram(transpose=True,
                                                      qubit_order=self.qubits))
                 print()
 
